@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Image } from 'react-native';
 
-import LogoImage from '../../assets/images/car.png'
+import LogoImage from '../../assets/images/nba_login_logo.png'
 
 const LogoComponent = () => (
     <View style={{alignItems: 'center'}}>

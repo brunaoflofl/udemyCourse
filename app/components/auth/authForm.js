@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, Platform, Button } from 'react-native';
 import Input from '../../utils/forms/input';
+import ValidationRules from '../../utils/forms/validationRules'
 
 class AuthForm extends Component {
  
