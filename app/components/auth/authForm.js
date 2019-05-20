@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet, Platform, Button } from 'react-native';
 import Input from '../../utils/forms/input';
 import ValidationRules from '../../utils/forms/validationRules'
+import {connect} from 'react-redux';
+import {signIn, signUp} from '../../store/actions/users_actions';
+import {bindActionCreators} from 'redux'
+
 
 class AuthForm extends Component {
  
@@ -76,11 +80,46 @@ class AuthForm extends Component {
         let formCopy = this.state.form;
         formCopy[name].value = value;
 
-        ///rules
+    let rules = formCopy[name].rules;
+    let valid = ValidationRules(value, rules, formCopy);
 
-        this.setState({
+    formCopy[name].valid = valid;
+    
+
+    this.setState({
             form:formCopy
         })
+    }
+
+    submitUser = () => {
+        let isFormValid = true;
+        let formToSubmit = {};
+        const formCopy = this.state.form;
+
+        for(let key in formCopy){
+            if(this.state.type === 'Login'){
+                if(key !== 'confirmPassword'){
+                    isFormValid = isFormValid && formCopy[key].valid;
+                    formToSubmit[key] = formCopy[key].value;
+                }
+                
+            } else {
+                isFormValid = isFormValid && formCopy[key].valid;
+                formToSubmit[key] = formCopy[key].value;
+            }
+        }
+        if(isFormValid){
+            if(this.state.type === 'Login'){
+                
+            }else{
+
+            }
+
+        }else{
+            this.setState({
+                hasErrors:true
+            })
+        }
     }
 
   render() {
@@ -153,4 +192,14 @@ const styles = StyleSheet.create({
         marginTop: 10
     }
 })
-export default AuthForm;
+
+function mapStateToProps(state){
+    cconsole.log(state)
+    return{
+        User: state.User
+    }
+}
+function mapDispatchToProps(dispatch){
+    return bindActionCreators({signIn, signUp}, dispatch);
+}
+export default connect(mapStateToProps, mapDispatchToProps)(AuthForm);
