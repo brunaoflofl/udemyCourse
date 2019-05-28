@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import AuthLogo from './authLogo';
 import AuthForm from './authForm';
+import {getTokens, setTokens} from '../../utils/misc';
 
 class AuthComponent extends Component {
   state = {
@@ -10,6 +11,12 @@ class AuthComponent extends Component {
 
   goNext = () => {
     this.props.navigation.navigate('App')
+  }
+
+  componentDidMount(){
+    getTokens((value)=>{
+
+    })
   }
 
   render() {

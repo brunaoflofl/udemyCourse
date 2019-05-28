@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet, Platform, Button } from 'react-native';
 import Input from '../../utils/forms/input';
 import ValidationRules from '../../utils/forms/validationRules'
-import {connect} from 'react-redux';
-import {signIn, signUp} from '../../store/actions/users_actions';
-import {bindActionCreators} from 'redux'
-
+import { connect } from 'react-redux';
+import { signIn, signUp } from '../../store/actions/users_actions';
+import { bindActionCreators } from 'redux';
+import {setTokens} from '../../utils/misc';
 
 class AuthForm extends Component {
- 
+
     state = {
         type: 'Login',
         action: 'Login',
@@ -19,7 +19,7 @@ class AuthForm extends Component {
                 value: "",
                 valid: false,
                 type: "textinput",
-                rules:{
+                rules: {
                     isRequired: true,
                     isEmail: true
                 }
@@ -28,7 +28,7 @@ class AuthForm extends Component {
                 value: "",
                 valid: false,
                 type: "textinput",
-                rules:{
+                rules: {
                     isRequired: true,
                     minLength: 6
                 }
@@ -37,7 +37,7 @@ class AuthForm extends Component {
                 value: "",
                 valid: false,
                 type: "textinput",
-                rules:{
+                rules: {
                     confirmPass: 'password'
                 }
             }
@@ -47,24 +47,23 @@ class AuthForm extends Component {
 
     formHasErrors = () => (
         this.state.hasErrors ?
-        <View style={styles.errorContainer}> 
-            <Text style={styles.errorLabel}>Oops, check your info.</Text>
-        </View>
-        :null
+        <View style = { styles.errorContainer } >
+          <Text style = { styles.errorLabel } > Oops, check your info. </Text> 
+        </View> :
+        null
     )
     confirmPassword = () => (
         this.state.type != 'Login' ?
-        <Input
-            placeholder="Confirm your password"
-            placeholderTextColor="#cecece"
-            type={this.state.form.confirmPassword.type}
-            value={this.state.form.confirmPassword.value}
-            onChangeText={value => this.updateInput("confirmPassword", value)}
-            secureTextEntry
-    />
-    :null
+        <Input placeholder = "Confirm your password"
+        placeholderTextColor = "#cecece"
+        type = { this.state.form.confirmPassword.type }
+        value = { this.state.form.confirmPassword.value }
+        onChangeText = { value => this.updateInput("confirmPassword", value) }
+        secureTextEntry />
+        :
+        null
     )
-    changeFormType = () =>{
+    changeFormType = () => {
         const type = this.state.type;
         this.setState({
             type: type === 'Login' ? 'Register' : 'Login',
@@ -80,15 +79,25 @@ class AuthForm extends Component {
         let formCopy = this.state.form;
         formCopy[name].value = value;
 
-    let rules = formCopy[name].rules;
-    let valid = ValidationRules(value, rules, formCopy);
+        let rules = formCopy[name].rules;
+        let valid = ValidationRules(value, rules, formCopy);
 
-    formCopy[name].valid = valid;
-    
+        formCopy[name].valid = valid;
 
-    this.setState({
-            form:formCopy
+
+        this.setState({
+            form: formCopy
         })
+    }
+    manageAccess = () => {
+        if(!this.props.User.auth.uid){
+            this.setState({hasErrors:true})
+        }else{
+            setTokens(this.props.User.auth, () => {
+                this.setState({hasErrors:false});
+                this.props.goNext()
+            })
+        }
     }
 
     submitUser = () => {
@@ -96,84 +105,84 @@ class AuthForm extends Component {
         let formToSubmit = {};
         const formCopy = this.state.form;
 
-        for(let key in formCopy){
-            if(this.state.type === 'Login'){
-                if(key !== 'confirmPassword'){
+        for (let key in formCopy) {
+            if (this.state.type === 'Login') {
+                if (key !== 'confirmPassword') {
                     isFormValid = isFormValid && formCopy[key].valid;
                     formToSubmit[key] = formCopy[key].value;
                 }
-                
+
             } else {
                 isFormValid = isFormValid && formCopy[key].valid;
                 formToSubmit[key] = formCopy[key].value;
             }
         }
-        if(isFormValid){
-            if(this.state.type === 'Login'){
-                
-            }else{
-
+        if (isFormValid) {
+            if (this.state.type === 'Login') {
+                this.props.signIn(formToSubmit).then(() =>{
+                    this.manageAccess()
+                })
+            } else {
+                this.props.signUp(formToSubmit).then(() =>{
+                    this.manageAccess()
+                })
             }
 
-        }else{
+        } else {
             this.setState({
-                hasErrors:true
+                hasErrors: true
             })
         }
     }
 
-  render() {
-    return (
-      <View>
-        <Input
-            placeholder="Enter email"
-            placeholderTextColor="#cecece"
-            type={this.state.form.email.type}
-            value={this.state.form.email.value}
-            autoCapitalize={"none"}
-            keyboardType={"email-address"}
-            onChangeText={value => this.updateInput("email", value)}
-        />
+    render() {
+        return ( 
+        <View>
+            <Input placeholder = "Enter email"
+            placeholderTextColor = "#cecece"
+            type = { this.state.form.email.type }
+            value = { this.state.form.email.value }
+            autoCapitalize = { "none" }
+            keyboardType = { "email-address" }
+            onChangeText = { value => this.updateInput("email", value) }
+            />
 
-        <Input
-            placeholder="Enter your password"
-            placeholderTextColor="#cecece"
-            type={this.state.form.password.type}
-            value={this.state.form.password.value}
-            onChangeText={value => this.updateInput("password", value)}
-            secureTextEntry
-        />
+            <Input placeholder = "Enter your password"
+            placeholderTextColor = "#cecece"
+            type = { this.state.form.password.type }
+            value = { this.state.form.password.value }
+            onChangeText = { value => this.updateInput("password", value) }
+            secureTextEntry 
+            />
 
-        {this.confirmPassword()}
-        {this.formHasErrors()}
+            { this.confirmPassword() } { this.formHasErrors() }
 
-        <View style={{marginTop:20}}>
-            <View style={styles.button}>
-                <Button
-                    title={this.state.action}
-                    onPress={this.submitUser}
-                />
+            <View style = {{ marginTop: 20 }} >
+                    <View style = { styles.button } >
+                        <Button title = { this.state.action }
+                        onPress = { this.submitUser }
+                        />
 
-            </View>
-            <View style={styles.button}>
-                <Button
-                    title={this.state.actionMode}
-                    onPress={this.changeFormType}
-                />
+                    </View> 
+                    <View style = { styles.button } >
+                        <Button title = { this.state.actionMode }
+                        onPress = { this.changeFormType }
+                        />
 
-            </View>
-            <View style={styles.button}>
-                <Button
-                    title="I'll do it later"
-                    onPress={()=>this.props.goNext()}
-                />
+                    </View> 
+                    <View style = { styles.button } >
+                        <Button title = "I'll do it later"
+                        onPress = {
+                            () => this.props.goNext() }
+                        />
 
-            </View>
+                    </View>
+
+            </View> 
 
         </View>
-      </View>
-    )
-  }
+        )
+    }
 }
 const styles = StyleSheet.create({
     errorContainer: {
@@ -186,20 +195,21 @@ const styles = StyleSheet.create({
         color: '#fff',
         textAlignVertical: 'center',
         textAlign: 'center'
-    }, 
+    },
     button: {
         marginBottom: 10,
         marginTop: 10
     }
 })
 
-function mapStateToProps(state){
-    cconsole.log(state)
-    return{
+function mapStateToProps(state) {
+
+    return {
         User: state.User
     }
 }
-function mapDispatchToProps(dispatch){
-    return bindActionCreators({signIn, signUp}, dispatch);
+
+function mapDispatchToProps(dispatch) {
+    return bindActionCreators({ signIn, signUp }, dispatch);
 }
 export default connect(mapStateToProps, mapDispatchToProps)(AuthForm);
